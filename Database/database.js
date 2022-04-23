@@ -89,13 +89,22 @@ const postReview = async (post) => {
     let reviewId = await client.query(`INSERT INTO reviews (product_id, rating, date, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES (${post.product_id}, ${post.rating}, ${date}, '${post.summary}', '${post.body}', ${post.recommend}, false, '${post.name}', '${post.email}', NULL, 0) RETURNING id`);
     if (post.photos.length) {
       for (var i = 0; i < post.photos.length; i++) {
-        console.log(post.photos[i]);
         await client.query(`INSERT INTO reviewsphotos (review_id, url) VALUES (${reviewId.rows[0].id}, '${post.photos[i]}')`);
       }
     }
-    // if (Object.keys(post.characteristics).length) {
-
-    // }
+    if (Object.keys(post.characteristics).length) {
+      let chars = await client.query(`SELECT name FROM characteristics WHERE characteristics.product_id = ${post.product_id}`);
+      let charsArr = [];
+      for (var j = 0; j < chars.rows.length; j++) {
+        charsArr.push(chars.rows[j].name);
+      }
+      for (var characteristic in post.characteristics) {
+        if (!charsArr.includes(characteristic)) {
+          var charId = await client.query(`INSERT INTO characteristics (product_id, name) VALUES (${post.product_id}, '${characteristic}') RETURNING id`);
+          await client.query(`INSERT INTO characteristicreviews (characteristic_id, review_id, value) VALUES (${charId.rows[0].id}, ${reviewId.rows[0].id}, ${post.characteristics[characteristic]})`)
+        }
+      }
+    }
     client.release();
   } catch(err) {
     console.log(`Error found in postReview: ${err}`);

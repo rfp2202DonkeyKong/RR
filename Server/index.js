@@ -147,7 +147,6 @@ app.get('/reviews/meta', async (req, res) => {
     recommended: getRecommendedData(metaReviews),
     characteristics: getCharacteristicData(metaReviews)
   }
-  console.log(result);
   res.send(result);
 })
 
@@ -215,19 +214,15 @@ app.put('/reviews/:review_id/report', async (req, res) => {
 
 //works
 app.put('/reviews/:review_id/helpful', async (req, res) => {
-  console.log(req.params.review_id)
   await addHelpfulReview(req.params.review_id);
   res.sendStatus(204);
 })
 
 //works
 app.post('/reviews', async (req, res) => {
-  console.log(req.body);
   await postReview(req.body);
-  res.send('Hopefully this works');
+  res.send(201);
 })
-
-
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
