@@ -31,7 +31,7 @@ const getReviews = async (productId, sort) => {
       helpfulness,
       url
     FROM current_product${productId} LEFT JOIN reviewsphotos ON reviewsphotos.review_id = current_product${productId}.id ORDER BY ${sort}`);
-    // await client.query(`DROP TABLE current_product`);
+    await client.query(`DROP TABLE current_product${productId}`);
     await client.release();
     return results.rows;
   } catch(err) {
@@ -56,7 +56,7 @@ const getMetaReviews = async (productId) => {
       FROM current_product${productId}
       INNER JOIN characteristicreviews ON current_product${productId}.id = characteristicreviews.review_id
       INNER JOIN characteristics ON characteristicreviews.characteristic_id = characteristics.id;`);
-      // await client.query(`DROP TABLE current_product`);
+      await client.query(`DROP TABLE current_product${productId}`);
       await client.release();
       return results.rows;
   } catch(err) {
