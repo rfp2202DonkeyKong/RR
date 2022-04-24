@@ -1,7 +1,9 @@
 const {getReviews, getMetaReviews, reportReview, addHelpfulReview, postReview} = require('../Database/database.js');
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(cors());
+const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 const getCharacteristicData = (data) => {
@@ -140,24 +142,36 @@ const getRecommendedData = (data) => {
 }
 //works
 app.get('/reviews/meta', async (req, res) => {
-  var metaReviews = await getMetaReviews(req.query.product_id);
-  var result = {
-    product_id: req.query.product_id.toString(),
-    ratings: getRatingsData(metaReviews),
-    recommended: getRecommendedData(metaReviews),
-    characteristics: getCharacteristicData(metaReviews)
+  if (req.query.product_id) {
+    var metaReviews = await getMetaReviews(req.query.product_id);
+    var result = {
+      product_id: req.query.product_id.toString(),
+      ratings: getRatingsData(metaReviews),
+      recommended: getRecommendedData(metaReviews),
+      characteristics: getCharacteristicData(metaReviews)
+    }
+    res.send(result);
+  } else {
+    res.send(401);
   }
-  res.send(result);
 })
 
 //works
 app.get('/reviews', async (req, res) => {
+  let count = Number(req.query.count);
+  let page = Number(req.query.page);
+  let truePage = 0;
+  if (page === 0) {
+    truePage = 0;
+  } else {
+    truePage = page - 1;
+  }
   let sort = req.query.sort;
   if (sort === 'helpful') {
     sort = 'helpfulness DESC'
   } else if (sort === 'newest') {
     sort = 'date DESC'
-  } else if (sort === 'relevance') {
+  } else if (sort === 'relevant') {
     sort = 'CASE WHEN helpfulness > 0 THEN helpfulness * date ELSE date END DESC'
   } else {
     sort = 'review_id DESC'
@@ -197,11 +211,12 @@ app.get('/reviews', async (req, res) => {
       currentReviewPointer++;
     }
   }
+  let paginatedReviews = formattedReviews.slice(truePage * count, (truePage * count) + count);
   let clientResponse = {
     product: req.query.product_id,
-    page: req.query.page,
-    count: req.query.count,
-    results: formattedReviews.slice(req.query.page * req.query.count, (req.query.page * req.query.count) + req.query.count)
+    page: page,
+    count: count,
+    results: paginatedReviews
   }
   res.send(clientResponse);
 })

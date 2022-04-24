@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+const { Pool, Client } = require('pg');
 const Promise = require('bluebird');
 // let db = Promise.promisifyAll(pg);
 
@@ -14,10 +14,11 @@ const pool = new Pool({
 const getReviews = async (productId, sort) => {
   try {
     let client = await pool.connect();
-    await client.query(`CREATE TABLE current_product AS SELECT * FROM reviews WHERE product_id = ${productId}`);
+    await client.query(`DROP TABLE IF EXISTS current_product${productId}`);
+    await client.query(`CREATE TABLE current_product${productId} AS SELECT * FROM reviews WHERE reviews.product_id = ${productId}`);
     let results = await client.query(
     `SELECT
-      current_product.id AS review_id,
+      current_product${productId}.id AS review_id,
       reviewsphotos.id AS photo_id,
       rating,
       date,
@@ -29,9 +30,9 @@ const getReviews = async (productId, sort) => {
       response,
       helpfulness,
       url
-    FROM current_product LEFT JOIN reviewsphotos ON reviewsphotos.review_id = current_product.id ORDER BY ${sort}`);
-    client.query(`DROP TABLE current_product`);
-    client.release();
+    FROM current_product${productId} LEFT JOIN reviewsphotos ON reviewsphotos.review_id = current_product${productId}.id ORDER BY ${sort}`);
+    // await client.query(`DROP TABLE current_product`);
+    await client.release();
     return results.rows;
   } catch(err) {
     console.log(`Error found in getReviews: ${err}`);
@@ -41,21 +42,22 @@ const getReviews = async (productId, sort) => {
 const getMetaReviews = async (productId) => {
   try {
     let client = await pool.connect();
-    await client.query(`CREATE TABLE current_product AS SELECT * FROM reviews WHERE product_id = ${productId}`);
+    await client.query(`DROP TABLE IF EXISTS current_product${productId}`);
+    await client.query(`CREATE TABLE current_product${productId} AS SELECT * FROM reviews WHERE product_id = ${productId}`);
     let results = await client.query(
       `SELECT
         characteristicreviews.id AS id,
-        current_product.id AS review_id,
+        current_product${productId}.id AS review_id,
         characteristicreviews.characteristic_id AS char_id,
         rating,
         recommend,
         name,
         value
-      FROM current_product
-      INNER JOIN characteristicreviews ON current_product.id = characteristicreviews.review_id
+      FROM current_product${productId}
+      INNER JOIN characteristicreviews ON current_product${productId}.id = characteristicreviews.review_id
       INNER JOIN characteristics ON characteristicreviews.characteristic_id = characteristics.id;`);
-      client.query(`DROP TABLE current_product`);
-      client.release();
+      // await client.query(`DROP TABLE current_product`);
+      await client.release();
       return results.rows;
   } catch(err) {
     console.log(`Error found in getMetaReviews: ${err}`)
