@@ -1,14 +1,12 @@
 const { Pool, Client } = require('pg');
 const Promise = require('bluebird');
-// let db = Promise.promisifyAll(pg);
-
 
 const pool = new Pool({
-  host: "localhost",
+  host: "54.151.20.225",
   user: "postgres",
   port: 5432,
-  password: "",
-  database: "ratings"
+  password: 'password',
+  database: "ratingsReviews"
 })
 
 pool.connect((err, client, release) => {
