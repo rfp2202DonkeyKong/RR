@@ -239,6 +239,10 @@ app.post('/reviews', async (req, res) => {
   res.send(201);
 })
 
+app.get('/loaderio-ea562f37dd186824de0cf9ea00a8aa95/', (req, res) => {
+  res.send('loaderio-ea562f37dd186824de0cf9ea00a8aa95');
+})
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 })
