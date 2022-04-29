@@ -15,18 +15,18 @@ const pool = new Pool({
 //   database: "ratingsReviews"
 // })
 
-pool.connect((err, client, release) => {
-  if (err) {
-    return console.error('Error acquiring client', err.stack);
-  }
-  client.query('SELECT NOW()', (err, result) => {
-    release();
-    if (err) {
-      return console.error('Error executing query', err.stack);
-    }
-    console.log(result.rows);
-  });
-});
+// pool.connect((err, client, release) => {
+//   if (err) {
+//     return console.error('Error acquiring client', err.stack);
+//   }
+//   client.query('SELECT NOW()', (err, result) => {
+//     release();
+//     if (err) {
+//       return console.error('Error executing query', err.stack);
+//     }
+//     console.log(result.rows);
+//   });
+// });
 
 const randomNumber = () => {
   return Math.floor(Math.random() * (999999999 - 0) + 0);
