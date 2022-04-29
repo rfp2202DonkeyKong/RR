@@ -54,7 +54,7 @@ const getReviews = async (productId, sort) => {
     LEFT JOIN reviewsphotos ON reviewsphotos.review_id = reviews.id
     WHERE reviews.product_id = ${productId}
     ORDER BY ${sort}`);
-    await client.release();
+    client.release();
     return results.rows;
   } catch(err) {
     console.log(`Error found in getReviews: ${err}`);
@@ -78,7 +78,7 @@ const getMetaReviews = async (productId) => {
       INNER JOIN characteristicreviews ON reviews.id = characteristicreviews.review_id
       INNER JOIN characteristics ON characteristicreviews.characteristic_id = characteristics.id
       WHERE ${productId} = reviews.product_id`);
-      await client.release()
+      client.release()
       return results.rows;
   } catch(err) {
     console.log(`Error found in getMetaReviews: ${err}`)
