@@ -56,6 +56,7 @@ const getReviews = async (productId, sort) => {
     client.release();
     return results.rows;
   } catch(err) {
+    client.release();
     console.log(`Error found in getReviews: ${err}`);
   }
 }
@@ -79,6 +80,7 @@ const getMetaReviews = async (productId) => {
       client.release()
       return results.rows;
   } catch(err) {
+    client.release();
     console.log(`Error found in getMetaReviews: ${err}`)
   }
 }
