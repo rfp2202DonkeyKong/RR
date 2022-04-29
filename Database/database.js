@@ -35,7 +35,6 @@ const randomNumber = () => {
 const getReviews = async (productId, sort) => {
   try {
     const client = await pool.connect();
-    let randomId = randomNumber();
     let results = await client.query(
     `SELECT
       reviews.id AS review_id,
@@ -64,7 +63,6 @@ const getReviews = async (productId, sort) => {
 const getMetaReviews = async (productId) => {
   try {
     const client = await pool.connect()
-    let randomId = randomNumber();
     let results = await client.query(
       `SELECT
         characteristicreviews.id AS id,
