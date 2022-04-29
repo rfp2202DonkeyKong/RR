@@ -34,12 +34,11 @@ const randomNumber = () => {
 
 const getReviews = async (productId, sort) => {
   try {
+    const client = await pool.connect();
     let randomId = randomNumber();
-    await pool.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
-    await pool.query(`CREATE MATERIALIZED VIEW current_product${randomId} AS SELECT * FROM reviews WHERE reviews.product_id = ${productId}`);
-    let results = await pool.query(
+    let results = await client.query(
     `SELECT
-      current_product${randomId}.id AS review_id,
+      reviews.id AS review_id,
       reviewsphotos.id AS photo_id,
       rating,
       date,
@@ -51,8 +50,11 @@ const getReviews = async (productId, sort) => {
       response,
       helpfulness,
       url
-    FROM current_product${randomId} LEFT JOIN reviewsphotos ON reviewsphotos.review_id = current_product${randomId}.id ORDER BY ${sort}`);
-    await pool.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
+    FROM reviews
+    LEFT JOIN reviewsphotos ON reviewsphotos.review_id = reviews.id
+    WHERE reviews.product_id = ${productId}
+    ORDER BY ${sort}`);
+    client.release();
     return results.rows;
   } catch(err) {
     console.log(`Error found in getReviews: ${err}`);
@@ -63,8 +65,6 @@ const getMetaReviews = async (productId) => {
   try {
     const client = await pool.connect()
     let randomId = randomNumber();
-    // await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
-    // await client.query(`CREATE MATERIALIZED VIEW current_product${randomId} AS SELECT * FROM reviews WHERE reviews.product_id = ${productId}`);
     let results = await client.query(
       `SELECT
         characteristicreviews.id AS id,
@@ -77,8 +77,7 @@ const getMetaReviews = async (productId) => {
       FROM reviews
       INNER JOIN characteristicreviews ON reviews.id = characteristicreviews.review_id
       INNER JOIN characteristics ON characteristicreviews.characteristic_id = characteristics.id
-      WHERE ${productId} = reviews.product_id;`);
-      // await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
+      WHERE ${productId} = reviews.product_id`);
       client.release()
       return results.rows;
   } catch(err) {
