@@ -7,6 +7,13 @@ const pool = new Pool({
   password: 'password',
   database: "ratingsReviews"
 })
+// const pool = new Pool({
+//   host: "localhost",
+//   user: "postgres",
+//   port: 5432,
+//   password: 'password',
+//   database: "ratingsReviews"
+// })
 
 pool.connect((err, client, release) => {
   if (err) {
@@ -54,10 +61,11 @@ const getReviews = async (productId, sort) => {
 
 const getMetaReviews = async (productId) => {
   try {
+    const client = await pool.connect()
     let randomId = randomNumber();
-    await pool.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
-    await pool.query(`CREATE MATERIALIZED VIEW current_product${randomId} AS SELECT * FROM reviews WHERE reviews.product_id = ${productId}`);
-    let results = await pool.query(
+    await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
+    await client.query(`CREATE MATERIALIZED VIEW current_product${randomId} AS SELECT * FROM reviews WHERE reviews.product_id = ${productId}`);
+    let results = await client.query(
       `SELECT
         characteristicreviews.id AS id,
         current_product${randomId}.id AS review_id,
@@ -69,7 +77,8 @@ const getMetaReviews = async (productId) => {
       FROM current_product${randomId}
       INNER JOIN characteristicreviews ON current_product${randomId}.id = characteristicreviews.review_id
       INNER JOIN characteristics ON characteristicreviews.characteristic_id = characteristics.id;`);
-      await pool.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
+      await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
+      client.release()
       return results.rows;
   } catch(err) {
     console.log(`Error found in getMetaReviews: ${err}`)
