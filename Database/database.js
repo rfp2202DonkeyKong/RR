@@ -63,21 +63,22 @@ const getMetaReviews = async (productId) => {
   try {
     const client = await pool.connect()
     let randomId = randomNumber();
-    await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
-    await client.query(`CREATE MATERIALIZED VIEW current_product${randomId} AS SELECT * FROM reviews WHERE reviews.product_id = ${productId}`);
+    // await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
+    // await client.query(`CREATE MATERIALIZED VIEW current_product${randomId} AS SELECT * FROM reviews WHERE reviews.product_id = ${productId}`);
     let results = await client.query(
       `SELECT
         characteristicreviews.id AS id,
-        current_product${randomId}.id AS review_id,
+        reviews.id AS review_id,
         characteristicreviews.characteristic_id AS char_id,
         rating,
         recommend,
         name,
         value
-      FROM current_product${randomId}
-      INNER JOIN characteristicreviews ON current_product${randomId}.id = characteristicreviews.review_id
-      INNER JOIN characteristics ON characteristicreviews.characteristic_id = characteristics.id;`);
-      await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
+      FROM reviews
+      INNER JOIN characteristicreviews ON reviews.id = characteristicreviews.review_id
+      INNER JOIN characteristics ON characteristicreviews.characteristic_id = characteristics.id
+      WHERE ${productId} = reviews.product_id;`);
+      // await client.query(`DROP MATERIALIZED VIEW IF EXISTS current_product${randomId}`);
       client.release()
       return results.rows;
   } catch(err) {
